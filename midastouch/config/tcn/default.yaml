@@ -1,0 +1,57 @@
+# Copyright (c) Meta Platforms, Inc. and its affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Config for tactile codes network
+
+model:
+  tcn_weights : tcn_weights.pth.tar
+  model : MinkFPN
+  num_points : 4096
+  batch_size : 100
+  mink_quantization_size : 0.001
+  planes : 32,64,64
+  layers : 1,1,1
+  num_top_down : 1
+  conv0_kernel_size : 5
+  feature_size : 256
+  output_dim : 256
+
+train:
+  num_workers : 8
+  batch_size : 8
+  val_batch_size : 64
+  batch_size_limit : 64
+  batch_expansion_rate : 1.4
+  batch_expansion_th : 0.7
+  max_batches : 1000
+  # final_block : fc
+
+  lr : 1e-7
+  image_lr : 1e-4
+  epochs : 100
+
+  scheduler_milestones : 30, 50, 70
+
+  scheduler : MultiStepLR
+  min_lr : 1e-6
+  optimizer : Adam 
+
+  aug_mode : 1
+  weight_decay : 1e-4
+
+  loss : BatchHardTripletMarginLoss
+  weights : 1.0, 0.0, 0.0
+  normalize_embeddings : True
+  margin : 0.2
+
+  pos_margin : 0.2
+  neg_margin : 0.65
+
+  train_file : train_sets_tacto_40.pickle
+  val_file : val_sets_tacto_40.pickle
+
+  dataset_folder : /mnt/sda/suddhu/minkloc/minkloc_data
+  val_folder :  /mnt/sda/suddhu/minkloc/minkloc_val
+  eval_folder : /mnt/sda/suddhu/fcrn/fcrn_eval

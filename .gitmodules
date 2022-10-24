@@ -1,0 +1,4 @@
+[submodule "YCB-Slide"]
+	path = YCB-Slide
+	url = https://github.com/rpl-cmu/YCB-Slide.git
+	branch = master

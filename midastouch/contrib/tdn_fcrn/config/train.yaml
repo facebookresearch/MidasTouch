@@ -1,0 +1,16 @@
+# Copyright (c) Meta Platforms, Inc. and its affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Config for tactile depth network training 
+
+batch_size : 50,
+lr : 1.0e-6,
+max_epochs : 100,
+resume_from_file : True
+data_file_path : data_files
+results_path : /mnt/sda/suddhu/fcrn/fcrn-training
+test_results_path : /mnt/sda/suddhu/fcrn/fcrn-testing
+init_weights : NYU_ResNet-UpProj.npy
+checkpoint_weights : tdn_weights.pth.tar

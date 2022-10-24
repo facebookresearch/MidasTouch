@@ -1,0 +1,25 @@
+# Copyright (c) Meta Platforms, Inc. and its affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Config for MidasTouch experimental setup 
+
+obj_model : 004_sugar_box # Object model
+log_id : 0 # Log ID
+ablation : False
+frame_rate : 10
+off_screen : False
+render : True
+max_length : None
+codebook_size : 50000
+
+params: 
+  num_particles : 50000
+  noise_r :
+    sim:  0.5
+    real: 0.5
+  noise_t : 
+    sim:  2e-4
+    real: 2e-4
+  noise_ratio : 1.0 
