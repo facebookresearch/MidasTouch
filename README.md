@@ -1,4 +1,5 @@
-<h1 align="center">
+<h1 align="center"><img src=".github/logo.svg"
+  width=45px>
   MidasTouch
 </h1>
 <h2 align="center">
@@ -16,10 +17,9 @@
   6th Annual Conference on Robot Learning (<a href="https://corl2022.org/">CoRL</a>) 2022
 </div>
 
-
 <h4 align="center">
   <a href="https://suddhu.github.io/midastouch-tactile/"><b>Website</b></a> &nbsp;•&nbsp;
-  <a href="https://openreview.net/forum?id=JWROnOf4w-K"><b>Paper</b></a> &nbsp;•&nbsp; 
+  <a href="https://arxiv.org/abs/2210.14210"><b>Paper</b></a> &nbsp;•&nbsp; 
   <a href="https://youtu.be/MkudcePyBJI"><b>Presentation</b></a> &nbsp;•&nbsp; 
   <a href="https://github.com/rpl-cmu/YCB-Slide"><b>YCB-Slide</b></a>
 </h4>
@@ -29,7 +29,7 @@
 object's surface using geometry captured by a tactile sensor
 <br> <br>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img height="20" src=".github/meta_ai.jpeg" alt="Meta-AI" />  &nbsp;&nbsp; <img height="20" src=".github/rpl.png" alt="rpl" />
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) &nbsp; [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img height="20" src=".github/meta_ai.jpeg" alt="Meta-AI" />  &nbsp;&nbsp; <img height="20" src=".github/rpl.png" alt="rpl" />
 </div>
 
 [cc-by-sa]: http://creativecommons.org/licenses/by-sa/4.0/
