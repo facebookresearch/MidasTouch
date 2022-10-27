@@ -109,7 +109,7 @@ With your own [DIGIT](https://digit.ml/), you can simple plug in the sensor and 
 
 
 ```python
-python midastouch/filter/filter_real.py expt.obj_model=025_mug
+python midastouch/filter/live_demo.py expt.obj_model=025_mug
 ```
 
 <div align="center">
