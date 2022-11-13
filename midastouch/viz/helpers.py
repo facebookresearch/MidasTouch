@@ -23,7 +23,7 @@ def viz_poses_pointclouds_on_mesh(
         pointclouds = [None] * 1
         pointclouds[0] = temp
 
-    plotter = pv.Plotter(window_size=[2000, 2000])
+    plotter = pv.Plotter(window_size=[2000, 2000], off_screen=True)
 
     mesh = pv.read(mesh_path)  # pyvista object
     dargs = dict(
@@ -36,7 +36,7 @@ def viz_poses_pointclouds_on_mesh(
         render=False,
     )
     plotter.add_mesh(mesh, **dargs)
-    draw_poses(plotter, mesh, poses)
+    draw_poses(plotter, mesh, poses, quiver_size=0.05)
 
     if poses.ndim == 2:
         spline = pv.lines_from_points(poses[:, :3])
@@ -111,11 +111,12 @@ def draw_poses(
     mesh: pv.DataSet,
     cluster_poses: np.ndarray,
     opacity: float = 1.0,
+    quiver_size=0.1,
 ) -> None:
     """
     Draw pose RGB coordinate axes for pose set in pyvista visualizer
     """
-    quivers = pose2quiver(cluster_poses, mesh.length / 10)
+    quivers = pose2quiver(cluster_poses, quiver_size * mesh.length)
     quivers = [quivers["xvectors"]] + [quivers["yvectors"]] + [quivers["zvectors"]]
     names = ["xvectors", "yvectors", "zvectors"]
     colors = ["r", "g", "b"]

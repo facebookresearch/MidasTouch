@@ -31,7 +31,6 @@ import matplotlib.pyplot as plot
 from torch.utils.tensorboard import SummaryWriter
 from weights import load_weights
 from tqdm import tqdm
-from midastouch.render.digit_renderer import pixmm
 from midastouch.modules.misc import DIRS
 from midastouch.contrib.tdn_fcrn.fcrn import FCRN_net
 import hydra
@@ -39,10 +38,15 @@ from omegaconf import DictConfig
 import time
 
 dtype = torch.cuda.FloatTensor
+pixmm = 0.03
 
 
 @hydra.main(config_path="config", config_name="train")
 def main(cfg: DictConfig) -> None:
+    abspath = osp.abspath(__file__)
+    dname = osp.dirname(abspath)
+    os.chdir(dname)
+
     batch_size, learning_rate, num_epochs = cfg.batch_size, cfg.lr, cfg.max_epochs
     resume_from_file = cfg.resume_from_file
     checkpoint_path = osp.join(DIRS["weights"], cfg.checkpoint_weights)

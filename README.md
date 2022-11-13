@@ -125,6 +125,7 @@ midastouch
 ├── bash          # bash scripts for filtering, codebook generation
 ├── config        # hydra config files 
 ├── contrib       # modified third-party code for TDN, TCN
+├── data_gen      # Generate tactile simulation data for training/eval
 ├── eval          # select evaluation scripts 
 ├── filter        # filtering and live demo scripts
 ├── modules       # helper functions and classes
@@ -133,6 +134,17 @@ midastouch
 └── viz           # pyvista visualization 
 ```
 
+## Data generation scripts
+
+- To generate your own tactile simulation data on object meshes, refer to the `midastouch/data_gen/` scripts. 
+- To collect tactile data in the real-world, refer to our experimental scripts in the [YCB-Slide repository](https://github.com/rpl-cmu/YCB-Slide). 
+
+<div align="center">
+  <img src=".github/power_drill_ycb_slide.png"
+  width="35%"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src=".github/power_drill_train_data.png"
+  width="35%">
+</div>
 
 ## Bibtex
 

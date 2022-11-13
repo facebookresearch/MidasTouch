@@ -38,16 +38,12 @@ def tf_to_xyzquat_numpy(pose: torch.Tensor) -> torch.Tensor:
     """
     convert 4 x 4 transformation matrices to [x, y, z, qx, qy, qz, qw]
     """
-    pose = torch.atleast_3d(pose)
+    pose = np.atleast_3d(pose)
 
-    t = pose[:, 0:3, 3]
-    q = th.SO3(tensor=pose[:, :3, :3]).to_quaternion()
+    r = R.from_matrix(np.array(pose[:, 0:3, 0:3]))
+    q = r.as_quat()  # qx, qy, qz, qw
+    t = pose[:, :3, 3]
     xyz_quat = np.concatenate((t, q), axis=1)
-
-    # pose = np.rollaxis(pose,2) # (4, 4, N) --> (N, 4, 4)
-    # r = R.from_matrix(np.array(pose[:, 0:3,0:3]))
-    # q = r.as_quat() # qx, qy, qz, qw
-    # xyz_quat = np.concatenate((t, q), axis=1)
 
     return xyz_quat  # (N, 7)
 
@@ -70,17 +66,15 @@ def xyzquat_to_tf_numpy(position_quat: np.ndarray) -> np.ndarray:
     """
     convert [x, y, z, qx, qy, qz, qw] to 4 x 4 transformation matrices
     """
-    try:
-        position_quat = np.atleast_2d(position_quat)  # (N, 7)
-        N = position_quat.shape[0]
-        T = np.zeros((4, 4, N))
-        T[0:3, 0:3, :] = np.moveaxis(
-            R.from_quat(position_quat[:, 3:]).as_matrix(), 0, -1
-        )
-        T[0:3, 3, :] = position_quat[:, :3].T
-        T[3, 3, :] = 1
-    except ValueError:
-        print("Zero quat error!")
+    # try:
+    position_quat = np.atleast_2d(position_quat)  # (N, 7)
+    N = position_quat.shape[0]
+    T = np.zeros((N, 4, 4))
+    T[:, 0:3, 0:3] = R.from_quat(position_quat[:, 3:]).as_matrix()
+    T[:, :3, 3] = position_quat[:, :3]
+    T[:, 3, 3] = 1
+    # except ValueError:
+    #     print("Zero quat error!")
     return T.squeeze()
 
 
@@ -164,11 +158,12 @@ def transform_pc(pointclouds: np.ndarray, poses: np.ndarray):
         pointclouds[0] = temp
         poses = np.expand_dims(poses, axis=2)
 
+    if len(poses.shape) < 3:
+        poses = xyzquat_to_tf_numpy(poses)
+
     transformed_pointclouds = pointclouds
     # TODO: vectorize
-    for i, (pointcloud, pose) in enumerate(
-        zip(pointclouds, np.transpose(poses, (2, 0, 1)))
-    ):
+    for i, (pointcloud, pose) in enumerate(zip(pointclouds, poses)):
         pointcloud = pointcloud.T
         # 3D affine transform
         pointcloud = pose @ np.vstack([pointcloud, np.ones((1, pointcloud.shape[1]))])

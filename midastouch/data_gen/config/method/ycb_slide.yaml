@@ -1,0 +1,26 @@
+# Copyright (c) Meta Platforms, Inc. and its affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+obj_class: ycb_test
+obj_model: 035_power_drill
+sampling : traj # random, random+edges, traj, manual
+save_path : ./ycb_slide
+noise: 
+  sig_r: 1  # degrees
+  sig_t: 5e-4  # m
+
+num_samples : 2000
+total_length : 0.5
+
+render:
+  pixmm : 0.03
+  width : 240 
+  height : 320
+  cam_dist : 0.022
+  shear_mag : 5.0
+  pen : 
+    min : 0.0005 
+    max : 0.001
+  randomize : False

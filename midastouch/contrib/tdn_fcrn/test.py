@@ -21,13 +21,16 @@ from midastouch.render.digit_renderer import digit_renderer, pixmm
 from midastouch.modules.misc import DIRS
 import hydra
 from omegaconf import DictConfig
-from hydra.utils import get_original_cwd
 
 dtype = torch.cuda.FloatTensor
 
 
 @hydra.main(config_path="config", config_name="test")
 def test(cfg: DictConfig):
+    abspath = osp.abspath(__file__)
+    dname = osp.dirname(abspath)
+    os.chdir(dname)
+
     tac_render = digit_renderer(obj_path=None)
     digit_tdn = TDN(cfg.tdn, bg=tac_render.get_background(frame="gel"))
     results_path = osp.join(DIRS["debug"], "tdn_test")
@@ -35,7 +38,7 @@ def test(cfg: DictConfig):
         os.makedirs(results_path)
 
     if cfg.real:
-        test_file = osp.join(get_original_cwd(), "data", "test_data_real.txt")
+        test_file = osp.join("data", "test_data_real.txt")
         test_loader = torch.utils.data.DataLoader(
             real_data_loader(test_file), batch_size=50, shuffle=False, drop_last=True
         )
@@ -72,8 +75,8 @@ def test(cfg: DictConfig):
             pbar.close()
         return
     else:
-        test_file = osp.join(get_original_cwd(), "test_data.txt")
-        label_file = osp.join(get_original_cwd(), "data", "test_label.txt")
+        test_file = osp.join("data", "test_data.txt")
+        label_file = osp.join("data", "test_label.txt")
         test_loader = torch.utils.data.DataLoader(
             data_loader(test_file, label_file),
             batch_size=50,

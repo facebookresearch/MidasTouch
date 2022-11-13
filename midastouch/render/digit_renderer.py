@@ -17,8 +17,7 @@ from omegaconf import DictConfig
 from midastouch.modules.misc import DIRS, view_subplots
 from midastouch.modules.pose import (
     pose_from_vertex_normal,
-    tf_to_xyzquat,
-    xyzquat_to_tf,
+    tf_to_xyzquat_numpy,
 )
 from scipy.spatial.transform import Rotation as R
 
@@ -42,6 +41,9 @@ class digit_renderer:
     ):
 
         self.render_config = cfg
+
+        if randomize:
+            bg_id = random.randint(0, 9)
         # Create renderer
         self.renderer = tacto.Renderer(
             width=cfg.width,
@@ -219,6 +221,8 @@ class digit_renderer:
 
         f, w, h = self.renderer.f, self.renderer.width / 2.0, self.renderer.height / 2.0
 
+        if not torch.is_tensor(heightmapValid):
+            heightmapValid = torch.from_numpy(heightmapValid)
         # (0, 640) and (0, 480)
         xvals = torch.arange(heightmapValid.shape[1], device=heightmapValid.device)
         yvals = torch.arange(heightmapValid.shape[0], device=heightmapValid.device)
@@ -246,23 +250,22 @@ class digit_renderer:
         """
         Render a trajectory of poses p via tac_render
         """
-        p = np.atleast_2d(p)
+        p = np.atleast_3d(p)
 
         N = p.shape[0]
         images, heightmaps, contactMasks = [None] * N, [None] * N, [None] * N
-        gelposes, camposes = np.zeros([N, 7]), np.zeros([N, 7])
+        gelposes, camposes = np.zeros([N, 4, 4]), np.zeros([N, 4, 4])
 
         min_press, max_press = (
             self.render_config.pen.min * pen_ratio,
             self.render_config.pen.max * pen_ratio,
         )
-        print(f"min_press: {min_press}, max_press: {max_press}")
+        # print(f"min_press: {min_press}, max_press: {max_press}")
         press_depth = np.random.uniform(low=min_press, high=max_press)
         press_range = max_press - min_press
 
         idx = 0
         for p0 in p:
-            p0 = xyzquat_to_tf(p0).squeeze()
 
             delta = np.random.uniform(-press_range / 50.0, press_range / 50.0)
             if press_depth + delta > max_press or press_depth + delta < min_press:
@@ -293,17 +296,16 @@ class digit_renderer:
             idx += 1
 
         # measurement with noise
-        if mNoise is not None and gelposes.shape[0] > 1:
-            rotNoise = np.random.normal(loc=0.0, scale=mNoise["sig_r"], size=(N, 3))
-            Rn = R.from_euler("zyx", rotNoise, degrees=True).as_matrix()  # (N, 3, 3)
-            tn = np.random.normal(loc=0.0, scale=mNoise["sig_t"], size=(3, N))
-            Rn = Rn.transpose(1, 2, 0)  # (3, 3, N)
-            Tn = np.zeros((4, 4, N))
-            Tn[:3, :3, :], Tn[:3, 3, :], Tn[3, 3, :] = Rn, tn, 1
-            gelposes_meas = np.einsum("mnr,ndr->mdr", xyzquat_to_tf(gelposes), Tn)
-            gelposes_meas = tf_to_xyzquat(gelposes_meas)
-        else:
-            gelposes_meas = gelposes
+        rotNoise = np.random.normal(loc=0.0, scale=mNoise["sig_r"], size=(N, 3))
+        Rn = R.from_euler("zyx", rotNoise, degrees=True).as_matrix()  # (N, 3, 3)
+        tn = np.random.normal(loc=0.0, scale=mNoise["sig_t"], size=(N, 3))
+        Tn = np.zeros((N, 4, 4))
+        Tn[:, :3, :3], Tn[:, :3, 3], Tn[:, 3, 3] = Rn, tn, 1
+
+        gelposes_meas = gelposes @ Tn
+        gelposes_meas = tf_to_xyzquat_numpy(gelposes_meas)
+        gelposes = tf_to_xyzquat_numpy(gelposes)
+        camposes = tf_to_xyzquat_numpy(camposes)
 
         return heightmaps, contactMasks, images, camposes, gelposes, gelposes_meas
 

@@ -5,11 +5,11 @@
 
 # Config for tactile depth network training 
 
-batch_size : 50,
-lr : 1.0e-6,
-max_epochs : 100,
+batch_size : 50
+lr : 1.0e-6
+max_epochs : 100
 resume_from_file : True
-data_file_path : data_files
+data_file_path : data
 results_path : /mnt/sda/suddhu/fcrn/fcrn-training
 test_results_path : /mnt/sda/suddhu/fcrn/fcrn-testing
 init_weights : NYU_ResNet-UpProj.npy

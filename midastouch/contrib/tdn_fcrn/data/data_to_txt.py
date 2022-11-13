@@ -30,8 +30,8 @@ global_train_idx = 0
 global_dev_idx = 0
 global_test_idx = 0
 
-# different tactile background models: add multiple folders here
-data_root_paths = ["/mnt/sda/suddhu/fcrn/fcrn_data"]
+# different tactile background models: add multiple folders here, below is placeholder
+data_root_paths = ["/mnt/sda/fcrn/fcrn_data"]
 
 for data_root_path in data_root_paths:
     object_folders = sorted(os.listdir(data_root_path))

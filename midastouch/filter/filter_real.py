@@ -200,15 +200,16 @@ def filter_real(cfg: DictConfig, viz: Viz) -> None:
         filter_stats["rmse_t"].append(rmse_t.item())
         filter_stats["rmse_r"].append(rmse_r.item())
 
+        start_time = time.time()
         # apply measurement model every N frames
         if count % update_freq == 0:
-
             # get similarity from codebook
-            start_time = time.time()
             _, _, nn_tactile_codes = codebook.SE3_NN(particles.poses)
             particles.weights = pf.get_similarity(
                 tactile_code, nn_tactile_codes, softmax=False
             )
+        else:
+            particles.weights = torch.ones(len(particles), device=device)
 
         # prune drifted particles
         particles, drifted = pf.remove_invalid_particles(particles)
