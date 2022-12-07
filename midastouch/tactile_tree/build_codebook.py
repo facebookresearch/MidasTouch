@@ -14,7 +14,8 @@ os.environ["PYOPENGL_PLATFORM"] = "egl"
 from os import path as osp
 import numpy as np
 
-from midastouch.contrib.tdn_fcrn.tdn import TDN
+from midastouch.contrib.tdn.TactileDepth import TactileDepth
+
 from midastouch.contrib.tcn_minkloc.tcn import TCN
 import hydra
 from omegaconf import DictConfig
@@ -49,7 +50,7 @@ def build_codebook(cfg: DictConfig, image_embedding=False):
 
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path, randomize=True)
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TDN(tdn_cfg, bg=tac_render.get_background(frame="gel"))
+    digit_tdn = TactileDepth(depth_mode="vit", real=False)
 
     device = get_device(cpu=False)
 

@@ -112,6 +112,9 @@ def color_tsne(C: np.ndarray, TSNE_init: str) -> np.ndarray:
     """
     Project high-dimensional data via TSNE and colormap
     """
+
+    if torch.is_tensor(C):
+        C = C.cpu().numpy()
     tsne = TSNE(
         n_components=1,
         verbose=1,
@@ -119,6 +122,7 @@ def color_tsne(C: np.ndarray, TSNE_init: str) -> np.ndarray:
         n_iter=300,
         init=TSNE_init,
         random_state=0,
+        method="exact",
     )
 
     tsne_encoding = tsne.fit_transform(C)

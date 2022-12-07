@@ -114,17 +114,17 @@ class Viz:
             name="Codebook text",
         )
 
-        dargs = dict(
-            color="tan",
-            ambient=0.0,
-            opacity=0.7,
-            smooth_shading=True,
-            show_edges=False,
-            specular=1.0,
-            show_scalar_bar=False,
-            render=False,
-        )
-        self.plotter.add_mesh(self.moving_sensor, **dargs)
+        # dargs = dict(
+        #     color="tan",
+        #     ambient=0.0,
+        #     opacity=0.7,
+        #     smooth_shading=True,
+        #     show_edges=False,
+        #     specular=1.0,
+        #     show_scalar_bar=False,
+        #     render=False,
+        # )
+        # self.plotter.add_mesh(self.moving_sensor, **dargs)
 
         # Tactile window
         self.plotter.subplot(0, 1)
@@ -235,7 +235,7 @@ class Viz:
                 print(cluster_poses.shape, cluster_stds, idx)
                 pass
 
-        check = np.where(heatmap_weights < np.percentile(heatmap_weights, 90))[0]
+        check = np.where(heatmap_weights < np.percentile(heatmap_weights, 98))[0]
         heatmap_weights = np.delete(heatmap_weights, check)
         heatmap_points = np.delete(heatmap_points, check, axis=0)
 

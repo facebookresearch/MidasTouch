@@ -11,7 +11,7 @@ import os
 from os import path as osp
 
 from midastouch.render.digit_renderer import digit_renderer
-from midastouch.contrib.tdn_fcrn import TDN
+from midastouch.contrib.tdn.TactileDepth import TactileDepth
 from midastouch.modules.misc import DIRS, load_images
 import tqdm as tqdm
 import numpy as np
@@ -37,7 +37,7 @@ def compute_contact_area(cfg: DictConfig, real=False):
     obj_path = osp.join(DIRS["obj_models"], obj_model, "nontextured.stl")
 
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
-    digit_tdn = TDN(tdn_cfg, bg=tac_render.get_background(frame="gel"))
+    digit_tdn = TactileDepth(depth_mode="vit", real=False)
 
     for dataset in all_datasets:
         if dataset == "bg" or not osp.isdir(osp.join(data_path, dataset)):

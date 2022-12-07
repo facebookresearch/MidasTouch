@@ -21,7 +21,8 @@ from omegaconf import DictConfig
 
 from midastouch.viz.demo_visualizer import Viz
 from midastouch.render.digit_renderer import digit_renderer
-from midastouch.contrib.tdn_fcrn.tdn import TDN
+from midastouch.contrib.tdn.TactileDepth import TactileDepth
+
 from midastouch.contrib.tcn_minkloc.tcn import TCN
 from midastouch.modules.objects import ycb_test
 import time
@@ -72,7 +73,8 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
 
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TDN(tdn_cfg, bg=tac_render.get_background(frame="gel"), real=True)
+    digit_tdn = TactileDepth(depth_mode="vit", real=True)
+
     codebook = pickle.load(open(tree_path, "rb"))
     codebook.to_device(device)
     heatmap_poses, _ = codebook.get_poses()
@@ -91,14 +93,16 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
         image = image[:, :, ::-1]  # BGR -> RGB
         if count == 0:
             for _ in range(20):
-                digit_tdn.bg = digit_tdn.image2heightmap(image)
+                digit_tdn.bg = digit_tdn.image2heightmap(image).to(device)
 
         ### 1. TDN + TCN: convert image to heightmap and compress to tactile_code
         heightmap = digit_tdn.image2heightmap(image)  # expensive
-        mask = digit_tdn.heightmap2mask(heightmap, small_parts=small_parts)
+        mask = digit_tdn.heightmap2mask(heightmap.to(device), small_parts=small_parts)
         # view_subplots([image/255.0, heightmap.detach().cpu().numpy(), mask.detach().cpu().numpy()], [["image", "heightmap", "mask"]])
 
-        tactile_code = digit_tcn.cloud_to_tactile_code(tac_render, heightmap, mask)
+        tactile_code = digit_tcn.cloud_to_tactile_code(
+            tac_render, heightmap.to(device), mask
+        )
 
         cluster_poses, cluster_stds = None, None
         if not torch.sum(mask):

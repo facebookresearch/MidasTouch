@@ -19,7 +19,7 @@ Loads TACTO training data and trains the TDN
 
 import torch
 import torch.utils.data
-from midastouch.contrib.tdn_fcrn.data_loader import data_loader, real_data_loader
+from midastouch.contrib.tdn.touch_fcrn.data_loader import data_loader, real_data_loader
 import numpy as np
 import os
 from os import path as osp
@@ -32,7 +32,7 @@ from torch.utils.tensorboard import SummaryWriter
 from weights import load_weights
 from tqdm import tqdm
 from midastouch.modules.misc import DIRS
-from midastouch.contrib.tdn_fcrn.fcrn import FCRN_net
+from midastouch.contrib.tdn.touch_fcrn.fcrn import FCRN_net
 import hydra
 from omegaconf import DictConfig
 import time

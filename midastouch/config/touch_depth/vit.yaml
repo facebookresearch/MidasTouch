@@ -1,0 +1,109 @@
+# Copyright (c) Meta Platforms, Inc. and its affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+mode : vit
+
+settings: 
+  real: 
+    blend_sz : 10
+    border : 10
+    ratio : 0.9
+    clip : 5
+    batch_size : 1
+
+  sim: 
+    blend_sz : 0
+    border : 1
+    ratio : 0.2
+    clip : 5
+    batch_size : 1
+
+General:
+    device: cuda
+    type : depth
+    model_timm : vit_small_patch16_224_dino
+    emb_dim : 384
+    hooks : [2, 5, 8, 11]
+    read : projection
+    resample_dim : 128
+    optim : adam
+    lr_backbone : 1e-5
+    lr_scratch : 1e-4
+    loss_depth : mse
+    loss_segmentation : ce
+    momentum : 0.9
+    epochs : 500
+    batch_size : 100
+    path_input_images : YCB-Slide/dataset/sim/004_sugar_box/01/tactile_images
+    path_predicted_images : output
+    seed : 0
+    patch_size : 16
+
+Dataset:
+    paths:
+        path_dataset : input
+        list_datasets: [
+            "002_master_chef_can",
+            "003_cracker_box",
+            "007_tuna_fish_can",
+            "008_pudding_box",
+            "009_gelatin_box",
+            "010_potted_meat_can",
+            "011_banana",
+            "012_strawberry",
+            "013_apple",
+            "014_lemon",
+            "015_peach",
+            "016_pear",
+            "017_orange",
+            "018_plum",
+            "019_pitcher_base",
+            "024_bowl",
+            "026_sponge",
+            "029_plate",
+            "030_fork",
+            "031_spoon",
+            "032_knife",
+            "033_spatula",
+            "036_wood_block",
+            "040_large_marker",
+            "044_flat_screwdriver",
+            "050_medium_clamp",
+            "051_large_clamp",
+            "052_extra_large_clamp",
+            "053_mini_soccer_ball",
+            "054_softball",
+            "056_tennis_ball",
+            "057_racquetball",
+            "058_golf_ball",
+            "061_foam_brick",
+            "062_dice",
+            "065-a_cups",
+            "065-b_cups",
+            "070-a_colored_wood_blocks",
+            "072-a_toy_airplane",
+            "077_rubiks_cube"]
+        path_images : tactile_images
+        path_segmentations : gt_contactmasks
+        path_depths : gt_heightmaps
+    extensions :
+        ext_images : .jpg
+        ext_segmentations : .jpg
+        ext_depths : .jpg
+    splits:
+        split_train : 0.6
+        split_val : 0.2
+        split_test : 0.2
+    transforms:
+        resize : [224, 224]
+        p_flip : 0.0
+        p_crop : 0.0
+        p_rot : 0.0
+wandb :
+    enable : true
+    username : suddhu
+    images_to_show : 5
+    im_h : 640
+    im_w : 480

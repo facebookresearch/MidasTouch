@@ -34,7 +34,8 @@ from omegaconf import DictConfig, OmegaConf
 
 from midastouch.viz.visualizer import Viz
 from midastouch.render.digit_renderer import digit_renderer
-from midastouch.contrib.tdn_fcrn.tdn import TDN
+from midastouch.contrib.tdn.TactileDepth import TactileDepth
+
 from midastouch.contrib.tcn_minkloc.tcn import TCN
 from midastouch.modules.objects import ycb_test
 import time
@@ -98,7 +99,7 @@ def filter_real(cfg: DictConfig, viz: Viz) -> None:
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
 
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TDN(tdn_cfg, bg=tac_render.get_background(frame="gel"), real=True)
+    digit_tdn = TactileDepth(depth_mode="vit", real=True)
 
     # load tactile codebook
     codebook = pickle.load(open(tree_path, "rb"))

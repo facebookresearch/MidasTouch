@@ -5,8 +5,8 @@ env/*
 outputs/
 midastouch/tactile_tree/data
 midastouch/model_weights
-midastouch/contrib/tdn_fcrn/data/*.txt
-midastouch/contrib/tdn_fcrn/train_log/
+midastouch/contrib/tdn/fcrn/data/*.txt
+midastouch/contrib/tdn/fcrn/train_log/
 midastouch/deprecated
 
 core*

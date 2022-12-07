@@ -1,0 +1,24 @@
+# Copyright (c) Meta Platforms, Inc. and its affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Config for tactile depth network
+
+mode : fcrn
+tdn_weights : tdn_weights.pth.tar
+
+settings: 
+  real: 
+    blend_sz : 10
+    border : 10
+    ratio : 0.9
+    clip : 5
+    batch_size : 1
+
+  sim: 
+    blend_sz : 0
+    border : 1
+    ratio : 0.2
+    clip : 5
+    batch_size : 1

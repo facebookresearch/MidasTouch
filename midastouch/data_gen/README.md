@@ -70,5 +70,5 @@ render:
 ## Other notes 
 
 - The generated data is saved in timestamped folders in the hydra `output` directory
-- To use this data to train your tactile depth network, refer to the `contrib/tdn_fcrn` folder 
+- To use this data to train your tactile depth network, refer to the `contrib/tdn` folder 
 - To use this data in filtering experiments, refer to the `filter/filter.py` script
