@@ -68,7 +68,7 @@ class TactileDepth:
         padded_contact_mask = torch.zeros_like(self.bg, dtype=bool)
 
         total_area = contact_mask.shape[0] * contact_mask.shape[1]
-        atleast_area = 0.01 * total_area if small_parts else 0.1 * total_area
+        atleast_area = 0.01 * total_area if small_parts else 0.05 * total_area
 
         if torch.count_nonzero(contact_mask) < atleast_area:
             return padded_contact_mask

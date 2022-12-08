@@ -12,6 +12,7 @@ from midastouch.viz.helpers import viz_embedding_TSNE
 import dill as pickle
 from midastouch.modules.misc import DIRS, get_device, confusion_matrix, color_tsne
 from midastouch.modules.objects import ycb_test
+import numpy as np
 
 
 def viz_codebook(obj_model):
@@ -29,6 +30,22 @@ def viz_codebook(obj_model):
     embeddings = codebook.get_embeddings()
     sz = len(codebook)
     print("Visualize tree of size: {}".format(sz))
+
+    # subsample
+    N = 20000
+    if embeddings.shape[0] > N:
+        print(f"Downsampling from {embeddings.shape[0]} to {N}")
+        idxs = np.random.choice(
+            embeddings.shape[0],
+            N,
+            replace=False,
+        )
+        embeddings, poses = (
+            embeddings[
+                idxs,
+            ],
+            poses[idxs, :],
+        )
 
     # euclidean TSNE is proportional to cosine distance is the features are normalized,
     # so we can skip the confusion matrix computation
@@ -53,6 +70,6 @@ def viz_codebook(obj_model):
 
 
 if __name__ == "__main__":
-    obj_models = ycb_test
+    obj_models = ["puik_glass"]  # ycb_test
     for obj_model in obj_models:
         viz_codebook(obj_model)

@@ -9,8 +9,8 @@ settings:
   real: 
     blend_sz : 10
     border : 10
-    ratio : 0.9
-    clip : 5
+    ratio : 0.99
+    clip : 10
     batch_size : 1
 
   sim: 

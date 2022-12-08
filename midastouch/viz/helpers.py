@@ -193,8 +193,9 @@ def viz_embedding_TSNE(
     radius_factor=80.0,
     off_screen=False,
 ):
+    samples = samples.detach().cpu().numpy()
     samples = np.atleast_2d(samples)
-    samplePoints = pv.PolyData(samples[:, :3])
+    samplePoints = pv.PolyData(samples[:, :3, 3])
     samplePoints["similarity"] = clusters
 
     mesh_pv = pv.read(mesh_path)  # pyvista object

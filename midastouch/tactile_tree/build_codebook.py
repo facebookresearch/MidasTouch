@@ -95,7 +95,7 @@ def build_codebook(cfg: DictConfig, image_embedding=False):
             for j, image in enumerate(tactileImages):
                 est_h = digit_tdn.image2heightmap(image)  # expensive
                 est_c = digit_tdn.heightmap2mask(est_h)
-                est_heightmaps.append(est_h)
+                est_heightmaps.append(est_h.to(device))
                 est_masks.append(est_c)
 
                 # gt_h, gt_c = h[j], cm[j]

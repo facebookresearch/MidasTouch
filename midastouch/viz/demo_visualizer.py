@@ -76,9 +76,11 @@ class Viz:
         self.reset_widget.value = not flag
 
     def init_variables(self, mesh_path: str):
-        self.mesh_pv_deci = pv.read(
-            mesh_path.replace("nontextured", "nontextured_decimated")
-        )  # decimated pyvista object
+
+        if osp.exists(mesh_path.replace("nontextured", "nontextured_decimated")):
+            mesh_path = mesh_path.replace("nontextured", "nontextured_decimated")
+
+        self.mesh_pv_deci = pv.read(mesh_path)  # decimated pyvista object
 
         self.moving_sensor = pv.read(
             osp.join(DIRS["obj_models"], "digit", "digit.STL")
@@ -235,7 +237,7 @@ class Viz:
                 print(cluster_poses.shape, cluster_stds, idx)
                 pass
 
-        check = np.where(heatmap_weights < np.percentile(heatmap_weights, 98))[0]
+        check = np.where(heatmap_weights < np.percentile(heatmap_weights, 99))[0]
         heatmap_weights = np.delete(heatmap_weights, check)
         heatmap_points = np.delete(heatmap_points, check, axis=0)
 
@@ -254,10 +256,10 @@ class Viz:
             m = self.mesh_pv_deci.interpolate(
                 heatmap_cloud,
                 strategy="null_value",
-                radius=self.mesh_pv_deci.length / 50,
+                radius=self.mesh_pv_deci.length / 60,
             )
             self.plotter.update_scalar_bar_range(
-                clim=[np.percentile(heatmap_weights, 95), heatmap_weights.max()]
+                clim=[np.percentile(heatmap_weights, 99), heatmap_weights.max()]
             )
             self.plotter.update_scalars(
                 mesh=self.heatmap_mesh, scalars=m["similarity"], render=False

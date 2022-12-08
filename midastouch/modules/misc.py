@@ -84,6 +84,7 @@ def confusion_matrix(
     C = np.nan * np.zeros((sz, sz))
     num_batches = sz // batch_size
 
+    embeddings = embeddings.detach().cpu().numpy()
     if num_batches == 0:
         C = cosine_similarity(embeddings, embeddings).squeeze()
     else:
@@ -119,7 +120,7 @@ def color_tsne(C: np.ndarray, TSNE_init: str) -> np.ndarray:
         n_components=1,
         verbose=1,
         perplexity=40,
-        n_iter=300,
+        n_iter=1000,
         init=TSNE_init,
         random_state=0,
         method="exact",
