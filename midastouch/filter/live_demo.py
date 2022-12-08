@@ -64,16 +64,19 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
     # print('----------------------------------------\n')
 
     obj_model = expt_cfg.obj_model
-    small_parts = False if obj_model in ycb_test else True
+    small_parts = False  # if obj_model in ycb_test else True
 
-    tree_path = osp.join(DIRS["trees"], obj_model, "codebook.pkl")
+    tree_path = osp.join(DIRS["trees"], obj_model, "tree.pkl")
+    if not osp.exists(tree_path):
+        tree_path = osp.join(DIRS["trees"], obj_model, "codebook.pkl")
+
     obj_path = osp.join(DIRS["obj_models"], obj_model, "nontextured.stl")
 
     pf = particle_filter(cfg, obj_path, 1.0, real=True)
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
 
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TactileDepth(depth_mode="vit", real=True)
+    digit_tdn = TactileDepth(depth_mode="fcrn", real=True)
 
     codebook = pickle.load(open(tree_path, "rb"))
     codebook.to_device(device)
