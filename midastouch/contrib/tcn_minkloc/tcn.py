@@ -108,6 +108,10 @@ class TCN:
                             )
                         batch_cloud = batch_cloud[downsampleIDs, :]
 
+                    # batch_clouds[j] = batch_cloud
+                    # minv, _ = torch.min(batch_cloud, dim=0)
+                    # maxv, _ = torch.max(batch_cloud, dim=0)
+                    # batch_clouds[j] = 2.0 * (batch_cloud - minv) / (maxv - minv) - 1
                     batch_clouds[j] = (
                         2.0
                         * (batch_cloud - torch.min(batch_cloud))

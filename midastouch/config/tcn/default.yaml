@@ -43,7 +43,7 @@ train:
 
   loss : BatchHardTripletMarginLoss
   weights : 1.0, 0.0, 0.0
-  normalize_embeddings : True
+  normalize_embeddings : False
   margin : 0.2
 
   pos_margin : 0.2

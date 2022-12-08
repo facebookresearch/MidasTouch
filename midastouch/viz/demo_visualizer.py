@@ -237,15 +237,12 @@ class Viz:
                 print(cluster_poses.shape, cluster_stds, idx)
                 pass
 
-        check = np.where(heatmap_weights < np.percentile(heatmap_weights, 99))[0]
+        check = np.where(heatmap_weights < np.percentile(heatmap_weights, 98))[0]
         heatmap_weights = np.delete(heatmap_weights, check)
         heatmap_points = np.delete(heatmap_points, check, axis=0)
-
-        # print(heatmap_weights.min(), heatmap_weights.mean(), heatmap_weights.max())
-        heatmap_weights = np.exp(heatmap_weights)
         heatmap_weights = (heatmap_weights - np.min(heatmap_weights)) / (
             np.max(heatmap_weights) - np.min(heatmap_weights)
-        )
+        ) + 1.0
 
         # print(heatmap_weights.min(), np.percentile(heatmap_weights, 95), heatmap_weights.max())
         heatmap_weights = np.nan_to_num(heatmap_weights)
@@ -256,10 +253,8 @@ class Viz:
             m = self.mesh_pv_deci.interpolate(
                 heatmap_cloud,
                 strategy="null_value",
-                radius=self.mesh_pv_deci.length / 60,
-            )
-            self.plotter.update_scalar_bar_range(
-                clim=[np.percentile(heatmap_weights, 99), heatmap_weights.max()]
+                radius=self.mesh_pv_deci.length / 50,
+                sharpness=1.0,
             )
             self.plotter.update_scalars(
                 mesh=self.heatmap_mesh, scalars=m["similarity"], render=False
@@ -274,10 +269,11 @@ class Viz:
                 cmap=cm.get_cmap("viridis"),
                 scalars="similarity",
                 interpolate_before_map=True,
-                ambient=0.5,
+                ambient=1.0,
                 opacity=1.0,
                 show_scalar_bar=False,
                 silhouette=True,
+                clim=[1.0, 1.0 + 1.0],
             )
             self.plotter.add_mesh(self.heatmap_mesh, **dargs)
             self.plotter.set_focus(self.heatmap_mesh.center)
@@ -285,7 +281,7 @@ class Viz:
                 self.plotter.camera_position,
                 self.plotter.camera.azimuth,
                 self.plotter.camera.elevation,
-            ) = ("yz", 45, 20)
+            ) = ("yz", 45, 30)
             self.plotter.camera.Zoom(1.0)
             self.plotter.camera_set = True
         self.viz_count += 1

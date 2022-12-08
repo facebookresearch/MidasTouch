@@ -120,7 +120,7 @@ def color_tsne(C: np.ndarray, TSNE_init: str) -> np.ndarray:
         n_components=1,
         verbose=1,
         perplexity=40,
-        n_iter=1000,
+        n_iter=250,
         init=TSNE_init,
         random_state=0,
         method="exact",
