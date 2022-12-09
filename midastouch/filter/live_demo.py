@@ -59,29 +59,24 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
 
     device = get_device(cpu=False)  # get GPU
 
-    # print('\n----------------------------------------\n')
-    # print(OmegaConf.to_yaml(cfg))
-    # print('----------------------------------------\n')
-
     obj_model = expt_cfg.obj_model
     small_parts = False  # if obj_model in ycb_test else True
 
-    tree_path = osp.join(DIRS["trees"], obj_model, "codebook.pkl")
-    print(f"Loading {tree_path}")
     obj_path = osp.join(DIRS["obj_models"], obj_model, "nontextured.stl")
+    viz.init_variables(mesh_path=obj_path)
 
     pf = particle_filter(cfg, obj_path, 1.0, real=True)
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
 
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TactileDepth(depth_mode="fcrn", real=True)
+    digit_tdn = TactileDepth(depth_mode="vit", real=True)
 
+    tree_path = osp.join(DIRS["trees"], obj_model, "codebook.pkl")
+    print(f"Loading {tree_path}")
     codebook = pickle.load(open(tree_path, "rb"))
     codebook.to_device(device)
     heatmap_poses, _ = codebook.get_poses()
     heatmap_embeddings = codebook.get_embeddings()
-
-    viz.init_variables(mesh_path=obj_path)
 
     count = 0
     for _ in tqdm(range(10)):

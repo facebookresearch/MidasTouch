@@ -28,19 +28,18 @@ class Viz:
         self, off_screen: bool = False, zoom: float = 1.0, window_size: int = 0.5
     ):
 
-        pv.global_theme.multi_rendering_splitting_position = 0.7
+        pv.global_theme.multi_rendering_splitting_position = 0.4
         """
-            subplot(0, 0) main viz
-            subplot(0, 1): tactile image viz
-            subplot(1, 1): tactile codebook viz 
+            subplot(0, 0) tactile image viz
+            subplot(0, 1): main viz
         """
-        shape, row_weights, col_weights = (2, 2), [0.6, 0.4], [0.6, 0.4]
-        groups = [(np.s_[:], 0), (0, 1), (1, 1)]
+        shape, row_weights, col_weights = (3, 2), [0.33, 0.33, 0.33], [0.4, 0.6]
+        groups = [(np.s_[:], 0), (0, 1), (1, 1), (1, 2)]
 
         w, h = tk.Tk().winfo_screenwidth(), tk.Tk().winfo_screenheight()
 
         self.plotter = BackgroundPlotter(
-            title="MidasTouch",
+            title="MidasTouch: CoRL demo",
             lighting="three lights",
             window_size=(int(w * window_size), int(h * window_size)),
             off_screen=off_screen,
@@ -71,7 +70,7 @@ class Viz:
         self.plotter.camera_set = True
 
     def reset_vis(self, flag):
-        self.plotter.subplot(0, 0)
+        self.plotter.subplot(0, 1)
         self.set_camera()
         self.reset_widget.value = not flag
 
@@ -88,27 +87,12 @@ class Viz:
         self.init_sensor = copy.deepcopy(self.moving_sensor)  # sensor @ origin
 
         # Heatmap window
-        self.plotter.subplot(0, 0)
-        widget_size, pos = 20, self.plotter.window_size[1] - 40
-        self.reset_widget = self.plotter.add_checkbox_button_widget(
-            self.reset_vis,
-            value=True,
-            color_off="grey",
-            color_on="grey",
-            position=(10, pos - widget_size - 5),
-            size=widget_size,
-        )
-        self.plotter.add_text(
-            "Reset camera",
-            position=(15 + widget_size, pos - widget_size - 5),
-            color="black",
-            font="times",
-            font_size=8,
-        )
+        self.plotter.subplot(0, 1)
+
         self.set_camera()
         self.plotter.add_text(
-            "Tactile codebook output",
-            position="bottom",
+            "3D to embedding",
+            position="top",
             color="black",
             shadow=True,
             font="times",
@@ -116,24 +100,12 @@ class Viz:
             name="Codebook text",
         )
 
-        # dargs = dict(
-        #     color="tan",
-        #     ambient=0.0,
-        #     opacity=0.7,
-        #     smooth_shading=True,
-        #     show_edges=False,
-        #     specular=1.0,
-        #     show_scalar_bar=False,
-        #     render=False,
-        # )
-        # self.plotter.add_mesh(self.moving_sensor, **dargs)
-
         # Tactile window
-        self.plotter.subplot(0, 1)
-        self.plotter.camera.Zoom(1)
+        self.plotter.subplot(0, 0)
+        self.plotter.camera.Zoom(0.7)
         self.plotter.add_text(
-            "Tactile image and heightmap",
-            position="bottom",
+            "Touch to 3D",
+            position="top",
             color="black",
             shadow=True,
             font="times",
@@ -209,7 +181,7 @@ class Viz:
         cluster_poses,
         cluster_stds,
     ) -> None:
-        self.plotter.subplot(0, 0)
+        self.plotter.subplot(0, 1)
 
         heatmap_poses, heatmap_weights = (
             heatmap_poses.cpu().numpy(),
@@ -305,7 +277,7 @@ class Viz:
             self.heightmap_plane = copy.deepcopy(self.image_plane)
 
         # visualize gelsight image
-        self.plotter.subplot(0, 1)
+        self.plotter.subplot(0, 0)
         heightmap, mask = heightmap.cpu().numpy(), mask.cpu().numpy()
         image_tex = pv.numpy_to_texture(image)
 

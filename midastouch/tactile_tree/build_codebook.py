@@ -48,7 +48,7 @@ def build_codebook(cfg: DictConfig, image_embedding=False):
     else:
         tree_path = osp.join(DIRS["trees"], obj_model, "image_codebook.pkl")
 
-    tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path, randomize=True)
+    tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path, randomize=False)
     digit_tcn = TCN(tcn_cfg)
     digit_tdn = TactileDepth(depth_mode="vit", real=False)
 
@@ -58,11 +58,11 @@ def build_codebook(cfg: DictConfig, image_embedding=False):
 
     # Generate tree samples
     print("Generating {} samples".format(num_samples))
-    samples = sample_poses_on_mesh(mesh=mesh, num_samples=num_samples, edges=False)
+    samples = sample_poses_on_mesh(mesh=mesh, num_samples=num_samples, edges=True)
 
     """Get multimodal embeddings"""
     #####################################
-    batch_size = 100
+    batch_size = 500
     num_batches = num_samples // batch_size
     num_batches = 1 if num_batches == 0 else num_batches
 
