@@ -74,7 +74,7 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
 
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TactileDepth(depth_mode="vit", real=True)
+    digit_tdn = TactileDepth(depth_mode="fcrn", real=True)
 
     codebook = pickle.load(open(tree_path, "rb"))
     codebook.to_device(device)
