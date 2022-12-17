@@ -23,7 +23,7 @@ settings:
 General:
     device: cuda
     type : depth
-    model_timm : vit_small_patch16_224_dino
+    model_timm : vit_small_patch16_224.dino
     emb_dim : 384
     hooks : [2, 5, 8, 11]
     read : projection

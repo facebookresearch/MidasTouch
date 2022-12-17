@@ -25,7 +25,7 @@ pv.set_plot_theme("document")
 
 class Viz:
     def __init__(
-        self, off_screen: bool = False, zoom: float = 1.0, window_size: int = 0.5
+        self, off_screen: bool = False, zoom: float = 1.0, window_size: int = 1.0
     ):
 
         pv.global_theme.multi_rendering_splitting_position = 0.4
@@ -33,8 +33,8 @@ class Viz:
             subplot(0, 0) tactile image viz
             subplot(0, 1): main viz
         """
-        shape, row_weights, col_weights = (3, 2), [0.33, 0.33, 0.33], [0.4, 0.6]
-        groups = [(np.s_[:], 0), (0, 1), (1, 1), (1, 2)]
+        shape, row_weights, col_weights = (2, 2), [0.5, 0.5], [0.4, 0.6]
+        groups = [(np.s_[:], 0), (0, 1), (1, 1)]
 
         w, h = tk.Tk().winfo_screenwidth(), tk.Tk().winfo_screenheight()
 
@@ -53,7 +53,9 @@ class Viz:
             auto_update=True,
         )
         self.zoom = zoom
+        self.mesh_number = 0
 
+        self.mesh_rendered = [False] * 2
         self.viz_queue = queue.Queue(1)
         self.plotter.add_callback(self.update_viz, interval=10)
 
@@ -69,49 +71,81 @@ class Viz:
             self.plotter.camera.Zoom(zoom)
         self.plotter.camera_set = True
 
-    def reset_vis(self, flag):
-        self.plotter.subplot(0, 1)
-        self.set_camera()
-        self.reset_widget.value = not flag
+    def set_mug(self, flag):
+        if flag:
+            self.mesh_number = 0
+        else:
+            self.mesh_number = 1
+
 
     def init_variables(self, mesh_path: str):
+        
+        self.mesh_pv_deci = [None] * 2
+        for i, mesh in enumerate(mesh_path):
+            if osp.exists(mesh.replace("nontextured", "nontextured_decimated")):
+                mesh = mesh.replace("nontextured", "nontextured_decimated")
 
-        if osp.exists(mesh_path.replace("nontextured", "nontextured_decimated")):
-            mesh_path = mesh_path.replace("nontextured", "nontextured_decimated")
+            self.mesh_pv_deci[i] = pv.read(mesh)  # decimated pyvista object
 
-        self.mesh_pv_deci = pv.read(mesh_path)  # decimated pyvista object
-
-        self.moving_sensor = pv.read(
-            osp.join(DIRS["obj_models"], "digit", "digit.STL")
-        )  # plotted gt sensor
-        self.init_sensor = copy.deepcopy(self.moving_sensor)  # sensor @ origin
 
         # Heatmap window
         self.plotter.subplot(0, 1)
 
+        widget_size, pos = 20, self.plotter.window_size[0] - 40
+
         self.set_camera()
-        self.plotter.add_text(
-            "3D to embedding",
-            position="top",
-            color="black",
-            shadow=True,
-            font="times",
-            font_size=10,
-            name="Codebook text",
+        # txt = self.plotter.add_text(
+        #     "Mug embeddings",
+        #     position="top",
+        #     color="black",
+        #     shadow=True,
+        #     font="times",
+        #     font_size=15,
+        #     name="Codebook text",
+        # )
+        self.reset_widget_0 = self.plotter.add_checkbox_button_widget(
+            self.set_mug,
+            value=True,
+            color_off="white",
+            color_on="grey",
+            position=[500, 325],
+            size=widget_size,
         )
+
+
+        self.plotter.subplot(1, 1)
+        # self.plotter.add_text(
+        #     "Hammer embeddings",
+        #     position="top",
+        #     color="black",
+        #     shadow=True,
+        #     font="times",
+        #     font_size=15,
+        #     name="Codebook text",
+        # )
+        self.heatmap_mesh = [None] * 2
+
+        # self.reset_widget_1 = self.plotter.add_checkbox_button_widget(
+        #     self.set_hammer,
+        #     value=True,
+        #     color_off="white",
+        #     color_on="grey",
+        #     position=[500, 325],
+        #     size=widget_size,
+        # )
 
         # Tactile window
         self.plotter.subplot(0, 0)
         self.plotter.camera.Zoom(0.7)
-        self.plotter.add_text(
-            "Touch to 3D",
-            position="top",
-            color="black",
-            shadow=True,
-            font="times",
-            font_size=10,
-            name="Tactile text",
-        )
+        # self.plotter.add_text(
+        #     "Touch to 3D",
+        #     position="top",
+        #     color="black",
+        #     shadow=True,
+        #     font="times",
+        #     font_size=15,
+        #     name="Tactile text",
+        # )
 
         self.viz_count = 0
         self.image_plane, self.heightmap_plane = None, None
@@ -129,21 +163,24 @@ class Viz:
                 heightmap,
                 mask,
                 frame,
+                mesh_number
             ) = self.viz_queue.get()
-            self.viz_heatmap(
-                heatmap_poses, heatmap_weights, cluster_poses, cluster_stds
-            )
             self.viz_tactile_image(image, heightmap, mask)
-            self.plotter.add_text(
-                f"\nFrame {frame}   ",
-                position="upper_right",
-                color="black",
-                shadow=True,
-                font="times",
-                font_size=12,
-                name="frame text",
-                render=True,
-            )
+
+            if frame % 10 == 0:
+                self.viz_heatmap(
+                    heatmap_poses, heatmap_weights, cluster_poses, cluster_stds, mesh_number
+                )
+            # self.plotter.add_text(
+            #     f"\nFrame {frame}   ",
+            #     position="upper_right",
+            #     color="black",
+            #     shadow=True,
+            #     font="times",
+            #     font_size=12,
+            #     name="frame text",
+            #     render=True,
+            # )
             self.viz_queue.task_done()
 
     def update(
@@ -170,6 +207,7 @@ class Viz:
                 heightmap,
                 mask,
                 frame,
+                self.mesh_number
             ),
             block=False,
         )
@@ -180,34 +218,20 @@ class Viz:
         heatmap_weights: torch.Tensor,
         cluster_poses,
         cluster_stds,
+        mesh_number
     ) -> None:
-        self.plotter.subplot(0, 1)
+
+        if mesh_number == 0:
+            self.plotter.subplot(0, 1)
+        else:
+            self.plotter.subplot(1, 1)
+
 
         heatmap_poses, heatmap_weights = (
             heatmap_poses.cpu().numpy(),
             heatmap_weights.cpu().numpy(),
         )
         heatmap_points = heatmap_poses[:, :3, 3]
-
-        if cluster_poses is not None:
-            assert (
-                cluster_poses.shape[0] == cluster_stds.shape[0]
-            ), "dimensions must be equal"
-
-            cluster_poses, cluster_stds = (
-                cluster_poses.cpu().numpy(),
-                cluster_stds.cpu().numpy(),
-            )
-            idx = np.argmin(cluster_stds.squeeze())
-
-            try:
-                transformed_gelsight_mesh = self.init_sensor.transform(
-                    cluster_poses[idx, :, :], inplace=False
-                )
-                self.moving_sensor.shallow_copy(transformed_gelsight_mesh)
-            except:
-                print(cluster_poses.shape, cluster_stds, idx)
-                pass
 
         check = np.where(heatmap_weights < np.percentile(heatmap_weights, 98))[0]
         heatmap_weights = np.delete(heatmap_weights, check)
@@ -221,21 +245,22 @@ class Viz:
         heatmap_cloud = pv.PolyData(heatmap_points)
         heatmap_cloud["similarity"] = heatmap_weights
 
-        if self.viz_count:
-            m = self.mesh_pv_deci.interpolate(
+        selected_mesh = self.mesh_pv_deci[mesh_number]
+        if self.viz_count and self.mesh_rendered[mesh_number]:
+            m = selected_mesh.interpolate(
                 heatmap_cloud,
                 strategy="null_value",
-                radius=self.mesh_pv_deci.length / 50,
+                radius=selected_mesh.length / 50,
                 sharpness=1.0,
             )
             self.plotter.update_scalars(
-                mesh=self.heatmap_mesh, scalars=m["similarity"], render=False
+                mesh=self.heatmap_mesh[mesh_number], scalars=m["similarity"], render=False
             )
         else:
-            self.heatmap_mesh = self.mesh_pv_deci.interpolate(
+            self.heatmap_mesh[mesh_number] = selected_mesh.interpolate(
                 heatmap_cloud,
                 strategy="null_value",
-                radius=self.mesh_pv_deci.length / 50,
+                radius=selected_mesh.length / 50,
             )
             dargs = dict(
                 cmap=cm.get_cmap("viridis"),
@@ -247,8 +272,8 @@ class Viz:
                 silhouette=True,
                 clim=[1.0, 1.0 + 1.0],
             )
-            self.plotter.add_mesh(self.heatmap_mesh, **dargs)
-            self.plotter.set_focus(self.heatmap_mesh.center)
+            self.plotter.add_mesh(self.heatmap_mesh[mesh_number], **dargs)
+            self.plotter.set_focus(self.heatmap_mesh[mesh_number].center)
             (
                 self.plotter.camera_position,
                 self.plotter.camera.azimuth,
@@ -256,6 +281,7 @@ class Viz:
             ) = ("yz", 45, 30)
             self.plotter.camera.Zoom(1.0)
             self.plotter.camera_set = True
+            self.mesh_rendered[mesh_number] = True
         self.viz_count += 1
         return
 
