@@ -78,16 +78,10 @@ class TouchVIT:
         image = image.to(self.device).float()
 
         output_depth, _ = self.model(image)
-        output_depth = 255 * output_depth.squeeze(0).detach().cpu().numpy()
-        print(original_size)
-        output_depth = output_depth.squeeze(0).astype(np.uint8)
-        output_depth = cv2.resize(output_depth, dsize=original_size, interpolation=cv2.INTER_CUBIC) /255.0
-        print( torch.from_numpy(output_depth).shape)
-        return torch.from_numpy(output_depth).to(self.device)
-        # output_depth = transforms.ToPILImage()(output_depth).resize(
-        #     original_size, resample=Image.BICUBIC
-        # )
-        # return output_depth.to_tensor() transforms.PILToTensor()(output_depth/255.0).squeeze()
+        output_depth = transforms.ToPILImage()(output_depth.squeeze(0).float()).resize(
+            original_size, resample=Image.BICUBIC
+        )
+        return transforms.PILToTensor()(output_depth).squeeze().float()
 
     def run(self):
 

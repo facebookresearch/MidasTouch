@@ -10,7 +10,7 @@
 
 import numpy as np
 import torch
-# import theseus as th
+import theseus as th
 from scipy.spatial.transform import Rotation as R
 import dill as pickle
 from typing import List, Tuple

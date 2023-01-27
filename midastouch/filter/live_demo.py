@@ -3,10 +3,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-"""Main script for particle filtering with tactile embeddings"""
+"""Live demo: visualize image to 3D and object embeddings"""
 
 from os import path as osp
 import torch
+from midastouch.modules.particle_filter import particle_filter
 from midastouch.modules.misc import (
     DIRS,
     get_device,
@@ -15,7 +16,6 @@ import dill as pickle
 
 import hydra
 import sys
-import yappi
 
 from omegaconf import DictConfig
 
@@ -33,29 +33,6 @@ import threading
 
 """Initialize the DIGIT capture"""
 
-from torch.nn.functional import cosine_similarity
-from torch import nn
-def get_similarity(
-    queries: torch.Tensor, targets: torch.Tensor, softmax=True
-) -> torch.Tensor:
-    """
-    computing embedding similarity weights based on cosine score
-    """
-    weights = cosine_similarity(
-        torch.atleast_2d(queries), torch.atleast_2d(targets)
-    ).squeeze()
-    # weights = np.random.randn(*weights.shape) # random weights
-    if (
-        not torch.isclose(
-            weights.max() - weights.min(),
-            torch.tensor([0.0], device=weights.device, dtype=weights.dtype),
-        )
-        and softmax
-    ):
-        weights = nn.Softmax(dim=0)(
-            weights
-        )  # softmax: torch.exp(weights) / torch.sum(torch.exp(weights))
-    return weights
 
 def connectDigit(resolution="QVGA"):
     try:
@@ -82,37 +59,28 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
 
     device = get_device(cpu=False)  # get GPU
 
-    obj_model = ['025_mug', '048_hammer']
-    small_parts = False  # if obj_model in ycb_test else True
+    # print('\n----------------------------------------\n')
+    # print(OmegaConf.to_yaml(cfg))
+    # print('----------------------------------------\n')
 
-    obj_path = [None] *2
-    obj_path[0] = osp.join(DIRS["obj_models"], obj_model[0], "nontextured.stl")
-    obj_path[1] = osp.join(DIRS["obj_models"], obj_model[1], "nontextured.stl")
+    obj_model = expt_cfg.obj_model
+    small_parts = False if obj_model in ycb_test else True
 
-    viz.init_variables(mesh_path=obj_path)
+    tree_path = osp.join(DIRS["trees"], obj_model, "codebook.pkl")
+    obj_path = osp.join(DIRS["obj_models"], obj_model, "nontextured.stl")
 
-    tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=None)
+    pf = particle_filter(cfg, obj_path, 1.0, real=True)
+    tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path)
 
     digit_tcn = TCN(tcn_cfg)
-    digit_tdn = TactileDepth(depth_mode="fcrn", real=True)
+    digit_tdn = TactileDepth(depth_mode="vit", real=True)
 
-    tree_path = [None] *2
+    codebook = pickle.load(open(tree_path, "rb"))
+    codebook.to_device(device)
+    heatmap_poses, _ = codebook.get_poses()
+    heatmap_embeddings = codebook.get_embeddings()
 
-    tree_path[0] = osp.join(DIRS["trees"], obj_model[0], "codebook.pkl")
-    tree_path[1] = osp.join(DIRS["trees"], obj_model[1], "codebook.pkl")
-
-    print(f"Loading {tree_path}")
-    codebook = [None] * 2
-    codebook[0] = pickle.load(open(tree_path[0], "rb"))
-    codebook[0].to_device(device)
-    codebook[1] = pickle.load(open(tree_path[1], "rb"))
-    codebook[1].to_device(device)
-
-    heatmap_poses, heatmap_embeddings = [None] * 2, [None] * 2
-    heatmap_poses[0], _ = codebook[0].get_poses()
-    heatmap_embeddings[0] = codebook[0].get_embeddings()
-    heatmap_poses[1], _ = codebook[1].get_poses()
-    heatmap_embeddings[1] = codebook[1].get_embeddings()
+    viz.init_variables(mesh_path=obj_path)
 
     count = 0
     for _ in tqdm(range(10)):
@@ -121,7 +89,6 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
         digit.get_frame()
 
     while True:
-        mesh_number = viz.mesh_number
         image = digit.get_frame()
         image = image[:, :, ::-1]  # BGR -> RGB
         if count == 0:
@@ -139,14 +106,14 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
 
         cluster_poses, cluster_stds = None, None
         if not torch.sum(mask):
-            heatmap_weights = torch.zeros(heatmap_embeddings[mesh_number].shape[0])
+            heatmap_weights = torch.zeros(heatmap_embeddings.shape[0])
         else:
-            heatmap_weights = get_similarity(
-                tactile_code, heatmap_embeddings[mesh_number], softmax=True
+            heatmap_weights = pf.get_similarity(
+                tactile_code, heatmap_embeddings, softmax=True
             )
 
         viz.update(
-            heatmap_poses[mesh_number],
+            heatmap_poses,
             heatmap_weights,
             cluster_poses,
             cluster_stds,
@@ -161,7 +128,7 @@ def live_demo(cfg: DictConfig, viz: Viz) -> None:
 
 
 @hydra.main(config_path="../config", config_name="config")
-def main(cfg: DictConfig, viz=None, profile=False):
+def main(cfg: DictConfig, viz=None):
     if cfg.expt.render:
         viz = Viz(off_screen=cfg.expt.off_screen, zoom=1.0)
     t = threading.Thread(name="live_demo", target=live_demo, args=(cfg, viz))
@@ -169,6 +136,7 @@ def main(cfg: DictConfig, viz=None, profile=False):
     if viz:
         viz.plotter.app.exec_()
     t.join()
+
 
 if __name__ == "__main__":
     main()

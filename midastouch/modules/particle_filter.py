@@ -25,7 +25,7 @@ import copy
 from omegaconf import DictConfig
 import torch
 from torch import nn
-# import theseus as th
+import theseus as th
 from torch.utils.data import WeightedRandomSampler
 from typing import List, Tuple, Union
 
@@ -445,6 +445,29 @@ class particle_filter:
                 particles.labels[add_idxs],
             )
         return particles
+
+    def get_similarity(
+        self, queries: torch.Tensor, targets: torch.Tensor, softmax=True
+    ) -> torch.Tensor:
+        """
+        computing embedding similarity weights based on cosine score
+        """
+        weights = cosine_similarity(
+            torch.atleast_2d(queries), torch.atleast_2d(targets)
+        ).squeeze()
+        # weights = np.random.randn(*weights.shape) # random weights
+        if (
+            not torch.isclose(
+                weights.max() - weights.min(),
+                torch.tensor([0.0], device=weights.device, dtype=weights.dtype),
+            )
+            and softmax
+        ):
+            weights = nn.Softmax(dim=0)(
+                weights
+            )  # softmax: torch.exp(weights) / torch.sum(torch.exp(weights))
+        return weights
+
 
 def particle_rmse(_particles: Particles, gt_pose: torch.Tensor) -> Tuple[float, float]:
     """

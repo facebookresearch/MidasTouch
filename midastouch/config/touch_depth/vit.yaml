@@ -8,7 +8,7 @@ mode : vit
 settings: 
   real: 
     blend_sz : 10
-    border : 10
+    border : 20
     ratio : 0.99
     clip : 10
     batch_size : 1
@@ -23,7 +23,7 @@ settings:
 General:
     device: cuda
     type : depth
-    model_timm : vit_small_patch16_224.dino
+    model_timm : vit_small_patch16_224_dino
     emb_dim : 384
     hooks : [2, 5, 8, 11]
     read : projection

@@ -180,7 +180,9 @@ def filter_real(cfg: DictConfig, viz: Viz) -> None:
         heightmap = digit_tdn.image2heightmap(image)  # expensive
         mask = digit_tdn.heightmap2mask(heightmap)
         # heightmap to code
-        tactile_code = digit_tcn.cloud_to_tactile_code(tac_render, heightmap, mask)
+        tactile_code = digit_tcn.cloud_to_tactile_code(
+            tac_render, heightmap.to(mask.device), mask
+        )
         timer["tactile"] = get_time(start_time)
 
         # motion model
