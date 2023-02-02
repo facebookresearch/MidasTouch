@@ -116,11 +116,11 @@ def color_tsne(C: np.ndarray, TSNE_init: str) -> np.ndarray:
         n_components=1,
         verbose=1,
         perplexity=40,
-        n_iter=300,
         init=TSNE_init,
         random_state=0,
     )
 
+    C = np.nan_to_num(C)
     tsne_encoding = tsne.fit_transform(C)
     tsne_encoding = np.squeeze(tsne_encoding)
     tsne_min, tsne_max = np.min(tsne_encoding), np.max(tsne_encoding)

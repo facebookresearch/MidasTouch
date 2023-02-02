@@ -34,17 +34,17 @@ def viz_codebook(obj_model):
     # so we can skip the confusion matrix computation
     print(f"Generating feature embedding scores {embeddings.shape[1]}")
     if embeddings.shape[1] > 256:
-        C = confusion_matrix(embeddings, sz)
-        TSNE = color_tsne(C, "pca", osp.join(DIRS["obj_models"], obj_model))
+        C = confusion_matrix(embeddings.detach().cpu().numpy(), sz)
+        TSNE = color_tsne(C, "pca")
     else:
-        TSNE = color_tsne(embeddings, "pca", osp.join(DIRS["obj_models"], obj_model))
+        TSNE = color_tsne(embeddings.detach().cpu().numpy(), "pca")
 
     print("Viz. TSNE")
     viz_embedding_TSNE(
         mesh_path=obj_path,
-        samples=poses,
+        samples=poses.detach().cpu().numpy(),
         clusters=TSNE,
-        save_path=osp.join(tree_path, "tsne"),
+        save_path=osp.join(DIRS["trees"], obj_model, f"tsne_{sz}"),
         nPoints=500,
         radius_factor=80.0,
         off_screen=False,

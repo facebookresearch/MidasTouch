@@ -50,7 +50,7 @@ def build_codebook(cfg: DictConfig, image_embedding=False):
     tac_render = digit_renderer(cfg=tdn_cfg.render, obj_path=obj_path, randomize=True)
     digit_tcn = TCN(tcn_cfg)
     digit_tdn = TDN(tdn_cfg, bg=tac_render.get_background(frame="gel"))
-
+    print(f"Using TDN weights: {tdn_cfg.tdn_weights}")
     device = get_device(cpu=False)
 
     mesh = trimesh.load(obj_path)
