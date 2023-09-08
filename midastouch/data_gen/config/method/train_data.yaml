@@ -21,6 +21,6 @@ render:
   cam_dist : 0.022
   shear_mag : 5.0
   pen : 
-    min : 0.0005 
+    min : 0.0001
     max : 0.001
   randomize : True

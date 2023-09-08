@@ -3,11 +3,15 @@ env/*
 .vscode/*
 .ipynb_checkpoints
 outputs/
+multirun/
 midastouch/tactile_tree/data
 midastouch/model_weights
 midastouch/contrib/tdn_fcrn/data/*.txt
 midastouch/contrib/tdn_fcrn/train_log/
 midastouch/deprecated
+train_data/
+*.code-workspace
+*.diff
 
 core*
 
