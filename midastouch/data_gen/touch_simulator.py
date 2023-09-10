@@ -22,8 +22,7 @@ from midastouch.modules.misc import (
 )
 from midastouch.modules.mesh import sample_poses_on_mesh
 from midastouch.modules.pose import transform_pc, xyzquat_to_tf_numpy
-from utils import random_geodesic_poses, random_manual_poses
-
+from midastouch.data_gen.utils import random_geodesic_poses, random_manual_poses
 import dill as pickle
 import trimesh
 import hydra
@@ -40,6 +39,7 @@ def touch_simulator(cfg: DictConfig):
     total_length = cfg.total_length
     save_path = cfg.save_path
     randomize = render_cfg.randomize
+    headless = False
 
     # make paths
     if save_path is None:
@@ -101,7 +101,7 @@ def touch_simulator(cfg: DictConfig):
         return
 
     # start renderer
-    tac_render = digit_renderer(cfg=render_cfg, obj_path=obj_path)
+    tac_render = digit_renderer(cfg=render_cfg, obj_path=obj_path, headless=headless)
 
     # remove NaNs
     batch_size = 1000
@@ -118,7 +118,7 @@ def touch_simulator(cfg: DictConfig):
     for i in tqdm(range(num_batches)):
         if randomize:
             tac_render = digit_renderer(
-                cfg=render_cfg, obj_path=obj_path, randomize=randomize
+                cfg=render_cfg, obj_path=obj_path, randomize=randomize, headless=headless
             )
         i_range = (
             np.array(range(i * batch_size, traj_sz))
@@ -166,31 +166,32 @@ def touch_simulator(cfg: DictConfig):
     with open(pose_path, "wb") as file:
         pickle.dump(save_dict, file)
 
-    viz_gelposes = xyzquat_to_tf_numpy(gelposes)
-    viz_gelposes_meas = xyzquat_to_tf_numpy(gelposes_meas)
+    if not headless:
+        viz_gelposes = xyzquat_to_tf_numpy(gelposes)
+        viz_gelposes_meas = xyzquat_to_tf_numpy(gelposes_meas)
 
-    print("Visualizing data")
-    if len(pointclouds_world) > 2500:
-        pointclouds_world = pointclouds_world[::10]
-        viz_gelposes, viz_gelposes_meas = (
-            viz_gelposes[::10, :],
-            viz_gelposes_meas[::10, :],
+        print("Visualizing data")
+        if len(pointclouds_world) > 2500:
+            pointclouds_world = pointclouds_world[::10]
+            viz_gelposes, viz_gelposes_meas = (
+                viz_gelposes[::10, :],
+                viz_gelposes_meas[::10, :],
+            )
+
+        viz_poses_pointclouds_on_mesh(
+            mesh_path=obj_path,
+            poses=viz_gelposes,
+            pointclouds=pointclouds_world,
+            save_path=osp.join(data_path, "tactile_data"),
+            decimation_factor=10,
         )
-
-    viz_poses_pointclouds_on_mesh(
-        mesh_path=obj_path,
-        poses=viz_gelposes,
-        pointclouds=pointclouds_world,
-        save_path=osp.join(data_path, "tactile_data"),
-        decimation_factor=10,
-    )
-    viz_poses_pointclouds_on_mesh(
-        mesh_path=obj_path,
-        poses=viz_gelposes_meas,
-        pointclouds=pointclouds_world,
-        save_path=osp.join(data_path, "tactile_data_noisy"),
-        decimation_factor=10,
-    )
+        viz_poses_pointclouds_on_mesh(
+            mesh_path=obj_path,
+            poses=viz_gelposes_meas,
+            pointclouds=pointclouds_world,
+            save_path=osp.join(data_path, "tactile_data_noisy"),
+            decimation_factor=10,
+        )
     return
 
 

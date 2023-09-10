@@ -13,7 +13,7 @@ import hydra
 from omegaconf import DictConfig
 
 
-@hydra.main(config_path="./config", config_name="config")
+@hydra.main(version_base=None, config_path="./config", config_name="config")
 def main(cfg: DictConfig):
     cfg = cfg.method
     obj_class = ycb_test if cfg.obj_class == "ycb_test" else ycb_train

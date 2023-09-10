@@ -56,7 +56,7 @@ git submodule update --init --recursive
 ### 2. Download  <a href="https://github.com/rpl-cmu/YCB-Slide">YCB-Slide</a> dataset
 ```bash
 cd YCB-Slide 
-chmod +x download_dataset.sh && ./download_dataset.sh
+chmod +x download_dataset.sh && ./download_dataset.sh # requires gdown
 cd ..
 ```
 ### 3. Download weights/codebooks
@@ -66,9 +66,21 @@ chmod +x download_assets.sh && ./download_assets.sh
 ### 4. Setup midastouch conda env
 ```bash
 sudo apt install build-essential python3-dev libopenblas-dev
-conda env create -f environment.yml 
+conda create -n midastouch
 conda activate midastouch
+conda env update --file environment.yml --prune
+conda install pytorch torchvision torchaudio cudatoolkit pytorch-cuda=11.7 -c pytorch -c nvidia  # install torch
+conda install -c conda-forge cudatoolkit-dev
+pip install theseus-ai
 pip install -e .
+```
+
+
+#### Known issues
+```ImportError: cannot import name 'gcd' from 'fractions' (/private/home/suddhu/.conda/envs/midastouch/lib/python3.9/fractions.py)```
+
+```bash
+conda install -c conda-forge networkx=2.5
 ```
 ### 5. Install PyTorch and the MinkowskiEngine
 
